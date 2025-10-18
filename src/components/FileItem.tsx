@@ -1,5 +1,5 @@
 import { type FileProps } from "@/lib/types";
-import { LoadSpinner } from "./LoadSpinner";
+import { Spinner } from "@/components/ui/spinner";
 import { formatBytes } from "@/lib/fileUploadHelpers";
 
 type FileItemProps = {
@@ -80,7 +80,7 @@ export function FileItem({
         >
           {file.isDeleting ? (
             <>
-              <LoadSpinner size="small" />
+              <Spinner className="size-4" />
               Deleting...
             </>
           ) : (

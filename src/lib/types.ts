@@ -22,9 +22,7 @@ export type FilesListProps = {
   downloadUsingPresignedUrl: boolean;
 };
 
-export type LoadSpinnerProps = {
-  size?: "small" | "medium" | "large";
-};
+
 
 export type UploadFilesFormUIProps = {
   isLoading: boolean;

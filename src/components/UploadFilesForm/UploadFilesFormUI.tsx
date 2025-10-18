@@ -1,4 +1,4 @@
-import { LoadSpinner } from "../LoadSpinner";
+import { Spinner } from "@/components/ui/spinner";
 import { type UploadFilesFormUIProps } from "@/lib/types";
 
 
@@ -19,7 +19,7 @@ export function UploadFilesFormUI({
       <p className="text-lg">{`Total file(s) size should not exceed ${maxFileSize} MB`}</p>
   
       {isLoading ? (
-        <LoadSpinner />
+        <Spinner className="size-16" />
       ) : (
         <div className="flex h-16 gap-5">
           <input

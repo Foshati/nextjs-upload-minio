@@ -4,7 +4,9 @@ import { MAX_FILE_SIZE_NEXTJS_ROUTE } from "@/lib/fileUploadHelpers";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react";
-import { LoadSpinner } from "../LoadSpinner";
+
+import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 
 type UploadFilesFormProps = {
   onUploadSuccess: () => void;
@@ -12,6 +14,7 @@ type UploadFilesFormProps = {
 
 export function UploadFilesRoute({ onUploadSuccess }: UploadFilesFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const maxSizeMB = MAX_FILE_SIZE_NEXTJS_ROUTE;
   const maxSize = maxSizeMB * 1024 * 1024;
 
@@ -54,6 +57,12 @@ export function UploadFilesRoute({ onUploadSuccess }: UploadFilesFormProps) {
     }
 
     setIsLoading(true);
+    setUploadProgress(0);
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 15, 90));
+    }, 150);
 
     const formData = createFormData(fileObjects);
     const response = await fetch("/api/files/upload/smallFiles", {
@@ -64,11 +73,19 @@ export function UploadFilesRoute({ onUploadSuccess }: UploadFilesFormProps) {
       status: "ok" | "fail";
       message: string;
     };
+    
+    clearInterval(progressInterval);
+    setUploadProgress(100);
+    
     if (body.status === "ok") {
-      clearFiles();
-      onUploadSuccess();
+      setTimeout(() => {
+        clearFiles();
+        onUploadSuccess();
+        setUploadProgress(0);
+      }, 500);
     } else {
       alert(body.message);
+      setUploadProgress(0);
     }
     setIsLoading(false);
   };
@@ -165,13 +182,18 @@ export function UploadFilesRoute({ onUploadSuccess }: UploadFilesFormProps) {
         )}
 
         {files.length > 0 && (
-          <Button
-            onClick={uploadToServer}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? <LoadSpinner /> : "Upload Files"}
-          </Button>
+          <div className="flex flex-col gap-2 w-full">
+            {isLoading && (
+              <Progress value={uploadProgress} className="w-full" />
+            )}
+            <Button
+              onClick={uploadToServer}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? "Uploading..." : "Upload Files"}
+            </Button>
+          </div>
         )}
       </div>
     </div>

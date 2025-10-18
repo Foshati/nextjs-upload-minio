@@ -8,7 +8,9 @@ import {
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react";
-import { LoadSpinner } from "../LoadSpinner";
+
+import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { type ShortFileProp } from "@/lib/types";
 
 type UploadFilesFormProps = {
@@ -19,6 +21,7 @@ export function UploadFilesS3PresignedUrl({
   onUploadSuccess,
 }: UploadFilesFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const maxSizeMB = MAX_FILE_SIZE_S3_ENDPOINT;
   const maxSize = maxSizeMB * 1024 * 1024;
 
@@ -60,6 +63,7 @@ export function UploadFilesS3PresignedUrl({
       return;
     }
     setIsLoading(true);
+    setUploadProgress(0);
 
     const presignedUrls = await getPresignedUrls(filesInfo);
     if (!presignedUrls?.length) {
@@ -68,9 +72,19 @@ export function UploadFilesS3PresignedUrl({
       return;
     }
 
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 10, 90));
+    }, 200);
+
     await handleUpload(fileObjects, presignedUrls, () => {
-      clearFiles();
-      onUploadSuccess();
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setTimeout(() => {
+        clearFiles();
+        onUploadSuccess();
+        setUploadProgress(0);
+      }, 500);
     });
 
     setIsLoading(false);
@@ -168,13 +182,18 @@ export function UploadFilesS3PresignedUrl({
         )}
 
         {files.length > 0 && (
-          <Button
-            onClick={uploadToServer}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? <LoadSpinner /> : "Upload Files"}
-          </Button>
+          <div className="flex flex-col gap-2 w-full">
+            {isLoading && (
+              <Progress value={uploadProgress} className="w-full" />
+            )}
+            <Button
+              onClick={uploadToServer}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? "Uploading..." : "Upload Files"}
+            </Button>
+          </div>
         )}
       </div>
     </div>
